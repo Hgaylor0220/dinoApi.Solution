@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using dinoApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 
 
@@ -21,9 +24,33 @@ namespace dinoApi.Controllers
         {
             _db = db;
         }
+
+           // POST api/dinos
+        [HttpPost]
+        public void Post([FromBody] Dino dino)
+        {
+            _db.Dinos.Add(dino);
+            _db.SaveChanges();
+        }
+
+        // GET api/dinos/5
+        [HttpGet("{id}")]
+        public ActionResult<Dino> Get(int id)
+        {
+            return _db.Dinos.FirstOrDefault(entry => entry.DinoId == id);
+        }
+
+        // PUT api/dinos/5
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] Dino dino)
+        {
+            dino.DinoId = id;
+            _db.Entry(dino).State = EntityState.Modified;
+            _db.SaveChanges();
+        }
         // GET api/values
             [HttpGet]
-        public ActionResult<IEnumerable<Dino>> Get(string name , string type, string mood, string habitat, string diet, string friends, string strength, string weakness )
+        public ActionResult<IEnumerable<Dino>> Get(string name , string type, string mood, string habitat, string diet, string asKnownAs, string strength, string weakness, string photoPath )
         {
             var query = _db.Dinos.AsQueryable();
 
@@ -47,9 +74,9 @@ namespace dinoApi.Controllers
             {
                 query = query.Where(entry => entry.Diet.Contains(diet));
             }
-             if (friends != null)
+             if (asKnownAs != null)
             {
-                query = query.Where(entry => entry.Friends.Contains(friends));
+                query = query.Where(entry => entry.AsKnownAs.Contains(asKnownAs));
             }
              if (strength != null)
             {
@@ -64,30 +91,16 @@ namespace dinoApi.Controllers
 
             return query.ToList();
         }
-
-        // POST api/dinos
-        [HttpPost]
-        public void Post([FromBody] Dino dino)
+            // Get api photo for dino
+        [HttpGet("{id}/photo")]
+        public IActionResult GetPhoto(int id)
         {
-            _db.Dinos.Add(dino);
-            _db.SaveChanges();
+            string path = _db.Dinos.FirstOrDefault(entry => entry.DinoId == id).PhotoPath;
+            FileStream stream = System.IO.File.Open(@path, System.IO.FileMode.Open);
+            return File(stream, "image/jpg");
         }
 
-        // GET api/dinos/5
-        [HttpGet("{id}")]
-        public ActionResult<Dino> Get(int id)
-        {
-            return _db.Dinos.FirstOrDefault(entry => entry.DinoId == id);
-        }
-
-        // PUT api/dinos/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Dino dino)
-        {
-            dino.DinoId = id;
-            _db.Entry(dino).State = EntityState.Modified;
-            _db.SaveChanges();
-        }
+    
 
         // DELETE api/dinos/5
         [HttpDelete("{id}")]
