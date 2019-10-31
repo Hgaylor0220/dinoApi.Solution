@@ -10,8 +10,9 @@ namespace dinoApi.Models
         public string Mood { get; set; }
         public string Habitat { get; set; }
         public string Diet { get; set; }
-        public string Friends { get; set; }
+        public string AsKnowAs { get; set; }
         public string Strength { get; set; }
         public string Weakness { get; set; }
+        public string PhotoPath {get; set;}
     }
 }
